@@ -49,7 +49,7 @@ namespace Messengers
 				MessengersBehaviours.Instance.messengerMap.Add(messenger.Name.ToString(), new Messenger(messenger, MessengersBehaviours.Instance.HeroesNotInParty[TargetToDeliverySelection.SelectedItem.StringItem]));
 			}
 		}
-		private void CancelMessengerrMenu()
+		private void CancelMessengerMenu()
 		{
 			Mission.Current.EndMission();
 			ScreenManager.PopScreen();

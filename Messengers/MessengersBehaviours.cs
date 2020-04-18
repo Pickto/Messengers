@@ -65,7 +65,7 @@ namespace Messengers
                 {
                     if (!messengerMap.Values.Select((Messenger x) => { return x.target; }).Concat(messengerMap.Values.Select((Messenger x) => { return x.messenger; })).Contains(hero))
                     {
-                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsPartyLeader && hero.IsAlive)
+                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsPartyLeader && hero.IsAlive && !hero.IsOccupiedByAnEvent())
                         {
                             HeroesNotInParty.Add(hero.Name.ToString(), hero);
                         }
