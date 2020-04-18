@@ -10,15 +10,13 @@ using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.SaveSystem;
-using TaleWorlds.Engine.Screens;
-using TaleWorlds.MountAndBlade.ViewModelCollection.Multiplayer.HUDExtensions;
-using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
-using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Map.Siege;
 using TaleWorlds.Core.ViewModelCollection;
+using TaleWorlds.Engine.Screens;
 
 namespace Messengers
 {
@@ -36,6 +34,7 @@ namespace Messengers
             this.target = target;
             days_need = DaysCount(messenger, target);
             MobileParty.MainParty.MemberRoster.RemoveTroop(messenger.CharacterObject);
+            messenger.ChangeState(Hero.CharacterStates.Disabled);
             InformationManager.DisplayMessage(new InformationMessage($"{messenger.Name} sent for { target.Name}. It will take about { days_need} {MessengersBehaviours.DaysEnding(days_need)}.")); 
         }
         public void DailyTick()
@@ -46,7 +45,7 @@ namespace Messengers
             }
             else
             {
-                if (!MobileParty.MainParty.MemberRoster.Troops.Contains(target.CharacterObject))
+                if (!MobileParty.MainParty.MemberRoster.Troops.Contains(target.CharacterObject) && !target.IsPrisoner && !target.IsPartyLeader && target.IsAlive && !target.IsOccupiedByAnEvent() && target.GovernorOf == null)
                 {
                     MobileParty.MainParty.AddElementToMemberRoster(target.CharacterObject, 1);
                     InformationManager.DisplayMessage(new InformationMessage($"{messenger.Name} returns to the squad, bringing with him { target.Name}."));
@@ -56,6 +55,7 @@ namespace Messengers
                     InformationManager.DisplayMessage(new InformationMessage($"{messenger.Name} returns to the squad."));
                 }
                 MobileParty.MainParty.AddElementToMemberRoster(messenger.CharacterObject, 1);
+                messenger.ChangeState(Hero.CharacterStates.Active);
                 MessengersBehaviours.Instance.messengerMap.Remove(messenger.Name.ToString());
             }
         }
@@ -65,7 +65,8 @@ namespace Messengers
         }
         public static int CostCount(Hero messenger, Hero target)
         {
-            return Math.Max(1, (int)(target.GetMapPoint().Position2D.Distance(messenger.GetMapPoint().Position2D) * 2));
+            float modifier = 1 - Math.Min(0.9f, messenger.GetRelationWithPlayer() / 100.0f);
+            return Math.Max(1, (int)(target.GetMapPoint().Position2D.Distance(messenger.GetMapPoint().Position2D) * modifier));
         }
     }
 }

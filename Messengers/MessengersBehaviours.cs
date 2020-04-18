@@ -19,6 +19,7 @@ using TaleWorlds.MountAndBlade.ViewModelCollection.Multiplayer.HUDExtensions;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Map.Siege;
 using TaleWorlds.Core.ViewModelCollection;
+using SandBox.GauntletUI;
 
 namespace Messengers
 {
@@ -26,10 +27,10 @@ namespace Messengers
     {
         public Dictionary<string, Messenger> messengerMap = new Dictionary<string, Messenger>();
         public Dictionary<string, Hero> HeroesNotInParty;
-        
         public SelectorVM<SelectorItemVM> TargetToDeliverySelection;
         public int cost;
         public int days;
+
         public static readonly MessengersBehaviours Instance = new MessengersBehaviours();
         public override void RegisterEvents()
         {
@@ -65,7 +66,7 @@ namespace Messengers
                 {
                     if (!messengerMap.Values.Select((Messenger x) => { return x.target; }).Concat(messengerMap.Values.Select((Messenger x) => { return x.messenger; })).Contains(hero))
                     {
-                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsPartyLeader && hero.IsAlive && !hero.IsOccupiedByAnEvent())
+                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsPartyLeader && hero.IsAlive && !hero.IsOccupiedByAnEvent() && hero.GovernorOf == null)
                         {
                             HeroesNotInParty.Add(hero.Name.ToString(), hero);
                         }
