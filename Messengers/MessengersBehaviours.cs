@@ -42,9 +42,7 @@ namespace Messengers
         private void OnSessionLaunched(CampaignGameStarter obj)
         {
             obj.AddPlayerLine("messenger_ask_to_find_companion", "hero_main_options", "messenger_ask_to_find_companion_ask", "Could you help me bring someone to me?", new ConversationSentence.OnConditionDelegate(conversation_is_companion_on_global_map), null, 100, new ConversationSentence.OnClickableConditionDelegate(exist_companion_not_in_party));
-            //obj.AddPlayerLine("messenger_ask_to_make_peace", "hero_main_options", "messenger_with_him", "Could you help make peace?", new ConversationSentence.OnConditionDelegate(conversation_is_companion_on_global_map), null, 100, new ConversationSentence.OnClickableConditionDelegate(conversation_make_peace_condition));
-
-            obj.AddDialogLine("messenger_ok_on_ask_to_find_companion", "messenger_ask_to_find_companion_ask", "messenger_who_is", "Yes, of course, who would you like to find?", null, new ConversationSentence.OnConsequenceDelegate(is_avaible_to_make_peace()), 100, null);
+            obj.AddDialogLine("messenger_ok_on_ask_to_find_companion", "messenger_ask_to_find_companion_ask", "messenger_who_is", "Yes, of course, who would you like to find?", null, new ConversationSentence.OnConsequenceDelegate(open_menu_to_choice), 100, null);
         }
         private void DailyTick()
         {
@@ -71,7 +69,7 @@ namespace Messengers
                 {
                     if (!messengerMap.Values.Select((Messenger x) => { return x.target; }).Concat(messengerMap.Values.Select((Messenger x) => { return x.messenger; })).Contains(hero))
                     {
-                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsPartyLeader && !hero.IsOccupiedByAnEvent() && hero.GovernorOf == null)
+                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsPartyLeader && !hero.IsOccupiedByAnEvent() && hero.GovernorOf == null && hero.IsAlive)
                         {
                             HeroesNotInParty.Add(hero.Name.ToString(), hero);
                         }
