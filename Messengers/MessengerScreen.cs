@@ -50,7 +50,7 @@ namespace Messengers
 			AddLayer(_gauntletLayer);
 			_gauntletLayer.InputRestrictions.SetInputRestrictions();
 			ScreenManager.TrySetFocus(_gauntletLayer);
-			_movie = _gauntletLayer.LoadMovie("MessengerScreen", _datasource);
+			_movie = (GauntletMovie)_gauntletLayer.LoadMovie("MessengerScreen", _datasource);
 			_firstRender = true;
 		}
 		protected override void OnFrameTick(float dt)

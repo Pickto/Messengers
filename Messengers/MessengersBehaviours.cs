@@ -19,6 +19,7 @@ using TaleWorlds.Engine.Screens;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Multiplayer.HUDExtensions;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Map.Siege;
+using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
 using TaleWorlds.Core.ViewModelCollection;
 using SandBox.GauntletUI;
 
@@ -28,12 +29,12 @@ namespace Messengers
     {
         public Dictionary<string, Messenger> messengerMap = new Dictionary<string, Messenger>();
         public Dictionary<string, Hero> HeroesNotInParty;
-        public Dictionary<string, IFaction> FactionsInWar;
         public SelectorVM<SelectorItemVM> TargetToDeliverySelection;
         public int cost;
         public int days;
 
         public static readonly MessengersBehaviours Instance = new MessengersBehaviours();
+        public static Settlement messengerSettlement;
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnSessionLaunched));
@@ -41,6 +42,10 @@ namespace Messengers
         }
         private void OnSessionLaunched(CampaignGameStarter obj)
         {
+            messengerSettlement = new Settlement
+            {
+                Name = new TextObject("Messenger Task")
+            };
             obj.AddPlayerLine("messenger_ask_to_find_companion", "hero_main_options", "messenger_ask_to_find_companion_ask", "Could you help me bring someone to me?", new ConversationSentence.OnConditionDelegate(conversation_is_companion_on_global_map), null, 100, new ConversationSentence.OnClickableConditionDelegate(exist_companion_not_in_party));
             obj.AddDialogLine("messenger_ok_on_ask_to_find_companion", "messenger_ask_to_find_companion_ask", "messenger_who_is", "Yes, of course, who would you like to find?", null, new ConversationSentence.OnConsequenceDelegate(open_menu_to_choice), 100, null);
         }
@@ -55,23 +60,22 @@ namespace Messengers
         {
             return !Hero.OneToOneConversationHero.IsNoble && Hero.OneToOneConversationHero.IsPlayerCompanion && (MobileParty.MainParty.CurrentSettlement == null || LocationComplex.Current == null);
         }
-        private bool is_avaible_to_make_peace()
-        {
-            return conversation_is_companion_on_global_map() && Hero.MainHero.IsFactionLeader;
-        }
         private bool exist_companion_not_in_party(out TextObject text)
         {
             HeroesNotInParty = new Dictionary<string, Hero>();
             IEnumerable<Hero> members = Hero.MainHero.Clan.Heroes.Concat(Hero.MainHero.Clan.Companions);
             foreach (Hero hero in members)
             {
-                if (!MobileParty.MainParty.MemberRoster.Troops.Contains(hero.CharacterObject))
+                if (!MobileParty.MainParty.MemberRoster.Contains(hero.CharacterObject))
                 {
                     if (!messengerMap.Values.Select((Messenger x) => { return x.target; }).Concat(messengerMap.Values.Select((Messenger x) => { return x.messenger; })).Contains(hero))
                     {
-                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsPartyLeader && !hero.IsOccupiedByAnEvent() && hero.GovernorOf == null && hero.IsAlive)
+                        if (!hero.IsChild && !hero.IsPrisoner && !hero.IsHeroOccupied(Hero.EventRestrictionFlags.Default) && !hero.IsPartyLeader && hero.GovernorOf == null && hero.IsAlive)
                         {
-                            HeroesNotInParty.Add(hero.Name.ToString(), hero);
+                            if (!HeroesNotInParty.ContainsKey(hero.Name.ToString()))
+                            { 
+                                HeroesNotInParty.Add(hero.Name.ToString(), hero);
+                            }
                         }
                     }
                 }
@@ -87,31 +91,6 @@ namespace Messengers
                 return true;
             }
 
-        }
-        private bool conversation_make_peace_condition(out TextObject text)
-        {
-            //var skills = Hero.OneToOneConversationHero.GetSkillValue(SkillObject.Find(new MBGUID(603979789)));
-            Campaign.Current.Kingdoms.First().IsAtWarWith(Hero.MainHero.Clan);
-            foreach (IFaction faction in Campaign.Current.Factions)
-            {
-                if (faction != Hero.MainHero.Clan)
-                {
-                    if (faction.IsAtWarWith(Hero.MainHero.Clan))
-                    {
-                        FactionsInWar.Add(faction.Name.ToString(), faction);
-                    }
-                }
-            }
-            if (FactionsInWar.IsEmpty())
-            {
-                text = new TextObject("No factions with whom the war is declared");
-                return false;
-            }
-            else
-            {
-                text = new TextObject("");
-                return true;
-            }
         }
         private void open_menu_to_choice()
         {

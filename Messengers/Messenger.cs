@@ -34,6 +34,7 @@ namespace Messengers
             this.target = target;
             days_need = DaysCount(messenger, target);
             MobileParty.MainParty.MemberRoster.RemoveTroop(messenger.CharacterObject);
+            messenger.StayingInSettlement = MessengersBehaviours.messengerSettlement;
             messenger.ChangeState(Hero.CharacterStates.Disabled);
             InformationManager.DisplayMessage(new InformationMessage($"{messenger.Name} sent for { target.Name}. It will take about { days_need} {MessengersBehaviours.DaysEnding(days_need)}.")); 
         }
@@ -45,7 +46,7 @@ namespace Messengers
             }
             else
             {
-                if (!MobileParty.MainParty.MemberRoster.Troops.Contains(target.CharacterObject) && !target.IsPrisoner && !target.IsPartyLeader && target.IsAlive && !target.IsOccupiedByAnEvent() && target.GovernorOf == null)
+                if (!MobileParty.MainParty.MemberRoster.Contains(target.CharacterObject) && !target.IsPrisoner && !target.IsPartyLeader && target.IsAlive && !target.IsHeroOccupied(Hero.EventRestrictionFlags.Default) && target.GovernorOf == null)
                 {
                     MobileParty.MainParty.AddElementToMemberRoster(target.CharacterObject, 1);
                     InformationManager.DisplayMessage(new InformationMessage($"{messenger.Name} returns to the squad, bringing with him { target.Name}."));

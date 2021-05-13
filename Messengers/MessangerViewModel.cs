@@ -56,7 +56,7 @@ namespace Messengers
 		}
 		public void RefreshProperties()
 		{
-			OnPropertyChanged("messengerDescription");
+			OnPropertyChanged("MessengerDescription");
 		}
 	}
 }
